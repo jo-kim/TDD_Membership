@@ -30,8 +30,7 @@ import java.util.stream.Stream;
 
 import static com.ko.tdd.membership.app.membership.constants.MembershipConstants.USER_ID_HEADER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -200,6 +199,60 @@ public class MembershipControllerTest {
         final ResultActions resultActions = mockMvc.perform(
                 MockMvcRequestBuilders.get(url)
                         .header(USER_ID_HEADER, "12345")
+        );
+
+        // then
+        resultActions.andExpect(status().isOk());
+    }
+
+    @Test
+    void 멤버십상세조회실패_사용자식별값이헤더에없음() throws Exception {
+
+        // given
+        final String url = "/api/v1/memberships";
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.get(url)
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 멤버십상세조회실패_멤버십이존재하지않음() throws Exception {
+
+        // given
+        final String url = "/api/v1/memberships/-1";
+        doThrow(new MembershipException(MembershipErrorResult.MEMBERSHIP_NOT_FOUND))
+                .when(membershipService)
+                .getMembership(-1L, "12345");
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.get(url)
+                        .header(USER_ID_HEADER, "12345")
+        );
+
+        // then
+        resultActions.andExpect(status().isNotFound());
+    }
+
+    @Test
+    void 멤버십상세조회성공() throws Exception {
+
+        // given
+        final String url = "/api/v1/memberships/-1";
+        doReturn(
+                MembershipDetailResponse.builder().build()
+        ).when(membershipService).getMembership(-1L, "12345");
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.get(url)
+                        .header(USER_ID_HEADER, "12345")
+                        .param("membershipType", MembershipType.NAVER.name())
         );
 
         // then
