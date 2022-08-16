@@ -30,7 +30,7 @@ public class MembershipServiceTest {
     private final MembershipType membershipType = MembershipType.NAVER;
     private final int point = 10000;
 
-    private Long membershipId = -1L;
+    private final Long membershipId = -1L;
     @InjectMocks
     private MembershipService target;
 
@@ -38,6 +38,41 @@ public class MembershipServiceTest {
     private MembershipRepository membershipRepository;
 
 
+    @Test
+    void 멤버십삭제_성공() {
+
+        // given
+        final Membership membership = membership();
+        doReturn(Optional.of(membership)).when(membershipRepository).findById(membershipId);
+
+        // when
+        target.removeMembership(membershipId, userId);
+    }
+    @Test
+    void 멤버십삭제실패_본인이아님() {
+
+        // given
+        final Membership membership = membership();
+        doReturn(Optional.of(membership)).when(membershipRepository).findById(membershipId);
+
+        // when
+        final MembershipException result = assertThrows(MembershipException.class, () -> target.removeMembership(membershipId, "notowner"));
+
+        //then
+        assertThat(result.getErrorResult()).isEqualTo(MembershipErrorResult.NOT_MEMBERSHIP_OWNER);
+    }
+    @Test
+    void 멤버십삭제실패_존재하지않음() {
+
+        // given
+        doReturn(Optional.empty()).when(membershipRepository).findById(membershipId);
+
+        // when
+        final MembershipException result = assertThrows(MembershipException.class, () -> target.removeMembership(membershipId, userId));
+
+        // then
+        assertThat(result.getErrorResult()).isEqualTo(MembershipErrorResult.NOT_MEMBERSHIP_OWNER);
+    }
     @Test
     void 멤버십상세조회실패_존재하지않음() {
         // given
