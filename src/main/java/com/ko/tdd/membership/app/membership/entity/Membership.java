@@ -26,6 +26,7 @@ public class Membership {
     @Column(nullable = false)
     private String userId;
 
+    @Setter
     @Column(nullable = false)
     @ColumnDefault("0")
     private Integer point;
@@ -37,5 +38,6 @@ public class Membership {
     @UpdateTimestamp
     @Column(length = 20)
     private LocalDateTime updatedAt;
+
 
 }
