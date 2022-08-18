@@ -289,6 +289,26 @@ public class MembershipControllerTest {
         // then
         resultActions.andExpect(status().isNoContent());
     }
+
+    @Test
+    void 멤버십적립실패_사용자식별값이헤더에없음() throws Exception {
+
+        // given
+        final String url = "/api/v1/memberships/-1/accumulate";
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.post(url)
+                        .content(gson.toJson(membershipRequest(10000)))
+                        .contentType(MediaType.APPLICATION_JSON)
+
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+
     private static Stream<Arguments> invalidMembershipAddParameter() {
         return Stream.of(
                 Arguments.of(null, MembershipType.NAVER),
@@ -300,6 +320,11 @@ public class MembershipControllerTest {
         return MembershipRequest.builder()
                 .point(point)
                 .membershipType(membershipType)
+                .build();
+    }
+    private MembershipRequest membershipRequest(final Integer point) {
+        return MembershipRequest.builder()
+                .point(point)
                 .build();
     }
 }
